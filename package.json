@@ -1,17 +1,15 @@
 {
-  "name": "backbone-partialput",
-  "description": "Only send changed attributes of Backbone models to the server.",
+  "name": "backbone-rel-partialput",
+  "description": "Only send changed attributes / embeddings / references of backbone-rel models to the server",
   "keywords": [
     "backbone",
-    "extension",
-    "model",
-    "patch",
-    "partial put"
+    "backbone-rel",
+    "backbone-partialput"
   ],
   "author": "Jan-Felix Schwarz",
   "dependencies": {
     "underscore": ">=1.5.0",
-    "backbone": ">=1.1.2"
+    "backbone-rel": ">=0.10.0"
   },
   "devDependencies": {
     "docco": "0.6.3",
@@ -36,10 +34,10 @@
     "lint": "jsl -nofilelisting -nologo -conf docs/jsl.conf -process backbone-partialput.js"
   },
   "main": "backbone-partialput.js",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/effektif/backbone-partialput.git"
+    "url": "https://github.com/jfschwarz/backbone-partialput.git"
   }
 }

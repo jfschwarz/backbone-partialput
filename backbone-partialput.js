@@ -2,7 +2,7 @@
     if(typeof define === 'function' && define.amd) {
         // AMD
 
-        define(['underscore', 'backbone', 'exports'], function(_, Backbone, exports) {
+        define(['underscore', 'backbone-rel', 'exports'], function(_, Backbone, exports) {
             // Export global even in AMD case in case this script is loaded with
             // others that may still expect a global Backbone.
             root.Backbone = factory(root, exports, _, Backbone);
@@ -12,7 +12,7 @@
         // for Node.js or CommonJS
 
         var _ = require('underscore'),
-            Backbone = require('backbone');
+            Backbone = require('backbone-rel');
 
         factory(root, exports, _, Backbone);
     } else {

@@ -10,6 +10,21 @@ define(function(require) {
         url: function() { return "a/" + this.id }
     });
 
+    var B = Backbone.Model.extend({
+
+        embeddings: {
+            e: Backbone.Model,
+            c: Backbone.Collection
+        },
+
+        references: {
+            r: Backbone.Model
+        },
+
+        inlineJSON: [ "e", "c" ]
+
+    });
+
     var a1Json = {
         "id": 1,
         "title": "a1",
@@ -74,7 +89,48 @@ define(function(require) {
                 a.set("title", "new_a_changed");
                 attrs = a.unsavedAttributes();
                 expect(attrs).to.deep.equal({ title: "new_a_changed" });
-            })
+            });
+
+
+
+            it("should return true if an attribute in the inlined, embedded model has been changed", function() {
+                var b = new B({
+                    e: { name: "emb1" }
+                });
+                expect(b.hasUnsavedChanges()).to.be.true;
+            });
+
+            it("should return true if an attribute in the inlined, embedded collection has been changed", function() {
+                var b = new B({
+                    c: [ { title: "item1"} ]
+                });
+                expect(b.hasUnsavedChanges()).to.be.true;
+            });
+
+            it("should return true if an inlined, embedded object is set to `null`", function() {
+                var b = new B({
+                    e: { name: "emb1" }
+                });
+                b.save();
+                server.requests[0].respond(200, { "Content-Type": "application/json" }, "{}");
+
+                expect(b.hasUnsavedChanges()).to.be.false;
+
+                b.set("e", null);
+                expect(b.hasUnsavedChanges()).to.be.true;
+            });
+
+            it("should return true if an inlined, embedded object is set to `null`", function() {
+                var b = new B({
+                    c: [ { title: "item1"} ]
+                });
+                b.save();
+                server.requests[0].respond(200, { "Content-Type": "application/json" }, "{}");
+                expect(b.hasUnsavedChanges()).to.be.false;
+
+                b.set("c", null);
+                expect(b.hasUnsavedChanges()).to.be.true;
+            });
 
         });
 

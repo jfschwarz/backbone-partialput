@@ -24,7 +24,8 @@ module.exports = function(config) {
       'test/test-main.js',
 
       { pattern: 'node_modules/underscore/underscore.js', included: false },
-      { pattern: 'node_modules/backbone/backbone.js', included: false },
+      { pattern: 'node_modules/backbone-rel/backbone-rel.js', included: false },
+      { pattern: 'node_modules/backbone-rel/node_modules/backbone/backbone.js', included: false },
       { pattern: 'node_modules/jquery/dist/jquery.js', included: false },
       { pattern: 'backbone-partialput.js', included: false },
       { pattern: "test/*.spec.js", included: false }
@@ -42,7 +43,7 @@ module.exports = function(config) {
 
     junitReporter: {
       outputFile: "results/test-results.xml",
-      suite: "Backbone Relations"
+      suite: "Backbone Rel Partialput"
     },
 
 

@@ -20,7 +20,8 @@ require.config({
 
   paths: {
     "underscore" : "node_modules/underscore/underscore",
-    "backbone" : "node_modules/backbone/backbone",
+    "backbone-rel" : "node_modules/backbone-rel/backbone-rel",
+    "backbone" : "node_modules/backbone-rel/node_modules/backbone/backbone",
     "jquery" : "node_modules/jquery/dist/jquery"
   },
 
