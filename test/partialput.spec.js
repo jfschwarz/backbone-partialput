@@ -21,7 +21,9 @@ define(function(require) {
             r: Backbone.Model
         },
 
-        inlineJSON: [ "e", "c" ]
+        inlineJSON: [ "e", "c" ],
+
+        url: function () { return "a/" + this.id }
 
     });
 

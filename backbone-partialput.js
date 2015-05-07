@@ -44,6 +44,11 @@
         // changed since the latest sync
         partialAttributesCore: [ 'id' ],
 
+        constructor: function () {
+            this._syncedInlinedJSONRepresentation = {};
+            return BackboneBase.Model.prototype.constructor.apply(this, arguments);
+        },
+
         // Symmetric to Backbone's `model.changedAttributes()`,
         // except that this returns a hash of the attributes that have
         // changed since the last sync, or `false` if there are none.
@@ -57,9 +62,34 @@
             return getChangedAttrs(this._syncedAttributes, attrs);
         },
 
+        // This method adds partial put support for inlined embedded objects. Similar to #unsavedAttributed() 
+        // it computes the JSON inlinings that have changed since the last server sync.
+        //
+        unsavedInlinedEmbeddings: function(options) {
+            options = options || {};
+            var inlineJSON = _.uniq(_.compact(_.flatten(
+                _.union([options.inlineJSON], [_.result(this, "inlineJSON")])
+            )));
+            if(inlineJSON.length===0) return {};
+
+            var json = this.toJSON(options);
+            var result = {};
+            _.each(inlineJSON, function(key) {
+                var firstKey = key.split(".")[0];
+                if(!_.isEqual(json[firstKey], this._syncedInlinedJSONRepresentation[firstKey])) {
+                    result[key] = json[firstKey];
+                }
+            }, this);
+            return result;
+        },
+
         // Has the model changes, that have not been synced to the server?
-        hasUnsavedChanges: function() {
-            return !_.isEmpty(this.unsavedAttributes());
+        hasUnsavedChanges: function(options) {
+            options = options || {};
+            return (
+                !_.isEmpty(this.unsavedAttributes()) ||  
+                !_.isEmpty(this.unsavedInlinedEmbeddings(options))
+            );
         },
 
         // Override #save to make sure that only the partial JSON representation is submitted
@@ -225,8 +255,18 @@
         },
 
         // Internal method that is called directly after attributes have been set from a server response
-        _resetSyncedAttributes: function() {
+        _resetSyncedAttributes: function(options) {
+            options = options || {};
             this._syncedAttributes = _.clone(this.attributes);
+
+            var inlineJSON = _.uniq(_.compact(_.flatten(
+                _.union([options.inlineJSON], [_.result(this, "inlineJSON")])
+            )));
+
+            if(inlineJSON.length>0) {
+                // this will only contain attrs from the core attrs and inlined embeddings
+                this._syncedInlinedJSONRepresentation = this.toJSON(options);
+            }
         }
 
 
