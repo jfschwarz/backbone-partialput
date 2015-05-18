@@ -9,7 +9,7 @@
   "author": "Jan-Felix Schwarz",
   "dependencies": {
     "underscore": ">=1.5.0",
-    "backbone-rel": ">=0.10.0"
+    "backbone-rel": ">=0.10.1"
   },
   "devDependencies": {
     "docco": "0.6.3",
