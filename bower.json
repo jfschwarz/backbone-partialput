@@ -1,6 +1,6 @@
 {
   "name"          : "backbone-partialput",
-  "version"       : "0.10.3",
+  "version"       : "0.10.4",
   "main"          : "backbone-partialput.js",
   "dependencies"  : {
     "underscore"  : ">=1.5.0",
