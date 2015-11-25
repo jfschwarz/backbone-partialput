@@ -130,6 +130,24 @@ define(function(require) {
 
         });
 
+        describe('#unsavedInlinedEmbeddings', function () {
+            
+            it.skip('should not return inlined embeddings that have been changed by the server', function () {
+                var b = new B({
+                    e: { name: "emb1" }
+                });
+                b.save();
+
+                server.requests[0].respond(200, 
+                    { "Content-Type": "application/json" },
+                    JSON.stringify({ e: { name: "emb1_changed" }})
+                );
+
+                expect(b.unsavedInlinedEmbeddings()).to.be.empty;
+            });
+
+        });
+
         describe('#hasUnsavedChanges', function () {
 
             it("should return true if an attribute in the inlined, embedded model has been changed", function() {
