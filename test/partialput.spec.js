@@ -93,7 +93,44 @@ define(function(require) {
                 expect(attrs).to.deep.equal({ title: "new_a_changed" });
             });
 
+            it('should return those attributes that have been changed during the last, now finished save request', function () {
+                var a = new A({
+                    title: "new_a",
+                    description: "new_desc"
+                });
+                a.save();
 
+                var attrs = a.unsavedAttributes();
+                expect(attrs).to.be.empty;
+
+                a.set("title", "new_a_changed");
+                
+                server.requests[0].respond(200, { "Content-Type": "application/json" },
+                    JSON.stringify({})
+                );
+
+                attrs = a.unsavedAttributes();
+                expect(attrs).to.deep.equal({ title: "new_a_changed" });
+            });
+
+            it('should not return attributes that have been changed by the server', function () {
+                var a = new A({
+                    title: "new_a",
+                    description: "new_desc"
+                });
+                a.save();
+                
+                server.requests[0].respond(200, { "Content-Type": "application/json" },
+                    JSON.stringify({ title: "new_a_changed" })
+                );
+
+                var attrs = a.unsavedAttributes();
+                expect(attrs).to.be.empty;
+            });
+
+        });
+
+        describe('#hasUnsavedChanges', function () {
 
             it("should return true if an attribute in the inlined, embedded model has been changed", function() {
                 var b = new B({
@@ -133,6 +170,7 @@ define(function(require) {
                 b.set("c", null);
                 expect(b.hasUnsavedChanges()).to.be.true;
             });
+
 
         });
 
