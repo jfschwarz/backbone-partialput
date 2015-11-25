@@ -30,7 +30,7 @@
               
             </div>
             
-            <div class="content"><div class='highlight'><pre>(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(root, factory)</span> </span>{
+            <div class="content"><div class='highlight'><pre>(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">root, factory</span>) </span>{
     <span class="hljs-keyword">if</span>(<span class="hljs-keyword">typeof</span> define === <span class="hljs-string">'function'</span> &amp;&amp; define.amd) {</pre></div></div>
             
         </li>
@@ -47,7 +47,7 @@
             </div>
             
             <div class="content"><div class='highlight'><pre>
-        define([<span class="hljs-string">'underscore'</span>, <span class="hljs-string">'backbone'</span>, <span class="hljs-string">'exports'</span>], <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(_, Backbone, exports)</span> </span>{</pre></div></div>
+        define([<span class="hljs-string">'underscore'</span>, <span class="hljs-string">'backbone-rel'</span>, <span class="hljs-string">'exports'</span>], <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">_, Backbone, exports</span>) </span>{</pre></div></div>
             
         </li>
         
@@ -83,7 +83,7 @@ others that may still expect a global Backbone.</p>
             
             <div class="content"><div class='highlight'><pre>
         <span class="hljs-keyword">var</span> _ = <span class="hljs-built_in">require</span>(<span class="hljs-string">'underscore'</span>),
-            Backbone = <span class="hljs-built_in">require</span>(<span class="hljs-string">'backbone'</span>);
+            Backbone = <span class="hljs-built_in">require</span>(<span class="hljs-string">'backbone-rel'</span>);
 
         factory(root, exports, _, Backbone);
     } <span class="hljs-keyword">else</span> {</pre></div></div>
@@ -105,7 +105,7 @@ others that may still expect a global Backbone.</p>
         root.Backbone = factory(root, {}, root._, root.Backbone);
     }
 
-}(<span class="hljs-keyword">this</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(root, exports, _, BackboneBase)</span> </span>{
+}(<span class="hljs-keyword">this</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">root, exports, _, BackboneBase</span>) </span>{
 
     <span class="hljs-keyword">var</span> Backbone = _.extend({}, BackboneBase);</pre></div></div>
             
@@ -123,7 +123,7 @@ that have different values compared to originalAttrs</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">var</span> getChangedAttrs = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(originalAttrs, newAttrs)</span> </span>{
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">var</span> getChangedAttrs = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">originalAttrs, newAttrs</span>) </span>{
         <span class="hljs-keyword">var</span> result = {};
         <span class="hljs-keyword">for</span>(<span class="hljs-keyword">var</span> key <span class="hljs-keyword">in</span> newAttrs) {
             <span class="hljs-keyword">if</span>(!_.isEqual(originalAttrs[key], newAttrs[key])) {
@@ -150,7 +150,12 @@ changed since the latest sync</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        partialAttributesCore: [ <span class="hljs-string">'id'</span> ],</pre></div></div>
+            <div class="content"><div class='highlight'><pre>        partialAttributesCore: [ <span class="hljs-string">'id'</span> ],
+
+        constructor: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+            <span class="hljs-keyword">this</span>._syncedInlinedJSONRepresentation = {};
+            <span class="hljs-keyword">return</span> BackboneBase.Model.prototype.constructor.apply(<span class="hljs-keyword">this</span>, <span class="hljs-built_in">arguments</span>);
+        },</pre></div></div>
             
         </li>
         
@@ -170,7 +175,7 @@ from the model’s attributes at the time of the last sync.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        unsavedAttributes: <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(attrs)</span> </span>{
+            <div class="content"><div class='highlight'><pre>        unsavedAttributes: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">attrs</span>) </span>{
             attrs = attrs || <span class="hljs-keyword">this</span>.attributes;
             <span class="hljs-keyword">if</span>(!<span class="hljs-keyword">this</span>._syncedAttributes) <span class="hljs-keyword">return</span> attrs;
 
@@ -186,20 +191,56 @@ from the model’s attributes at the time of the last sync.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
+              <p>This method adds partial put support for inlined embedded objects. Similar to #unsavedAttributed() 
+it computes the JSON inlinings that have changed since the last server sync.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        unsavedInlinedEmbeddings: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">options</span>) </span>{
+            options = options || {};
+            <span class="hljs-keyword">var</span> inlineJSON = _.uniq(_.compact(_.flatten(
+                _.union([options.inlineJSON], [_.result(<span class="hljs-keyword">this</span>, <span class="hljs-string">"inlineJSON"</span>)])
+            )));
+            <span class="hljs-keyword">if</span>(inlineJSON.length===<span class="hljs-number">0</span>) <span class="hljs-keyword">return</span> {};
+
+            <span class="hljs-keyword">var</span> json = <span class="hljs-keyword">this</span>.toJSON(options);
+            <span class="hljs-keyword">var</span> result = {};
+            _.each(inlineJSON, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">key</span>) </span>{
+                <span class="hljs-keyword">var</span> firstKey = key.split(<span class="hljs-string">"."</span>)[<span class="hljs-number">0</span>];
+                <span class="hljs-keyword">if</span>(!_.isEqual(json[firstKey], <span class="hljs-keyword">this</span>._syncedInlinedJSONRepresentation[firstKey])) {
+                    result[key] = json[firstKey];
+                }
+            }, <span class="hljs-keyword">this</span>);
+            <span class="hljs-keyword">return</span> result;
+        },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
               <p>Has the model changes, that have not been synced to the server?</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        hasUnsavedChanges: <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> </span>{
-            <span class="hljs-keyword">return</span> !_.isEmpty(<span class="hljs-keyword">this</span>.unsavedAttributes());
+            <div class="content"><div class='highlight'><pre>        hasUnsavedChanges: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">options</span>) </span>{
+            options = options || {};
+            <span class="hljs-keyword">return</span> (
+                !_.isEmpty(<span class="hljs-keyword">this</span>.unsavedAttributes()) ||  
+                !_.isEmpty(<span class="hljs-keyword">this</span>.unsavedInlinedEmbeddings(options))
+            );
         },
 
-        discardUnsavedChanges: <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> </span>{
+        discardUnsavedChanges: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
             <span class="hljs-keyword">this</span>.set(<span class="hljs-keyword">this</span>._syncedAttributes, {
                 silent: <span class="hljs-literal">true</span>
             });
 
-            _.each(<span class="hljs-keyword">this</span>.attributes, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(value, key)</span> </span>{
+            _.each(<span class="hljs-keyword">this</span>.attributes, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">value, key</span>) </span>{
                 <span class="hljs-keyword">if</span>(<span class="hljs-keyword">this</span>._syncedAttributes[key]) {
                     <span class="hljs-keyword">return</span>;
                 }
@@ -213,11 +254,11 @@ from the model’s attributes at the time of the last sync.</p>
         </li>
         
         
-        <li id="section-10">
+        <li id="section-11">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-10">&#182;</a>
+                <a class="pilcrow" href="#section-11">&#182;</a>
               </div>
               <p>Override #save to make sure that only the partial JSON representation is submitted
 and that the server response to POST and PUT requests is always parsed to contain
@@ -225,18 +266,18 @@ only attributes that have been changed on the server</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        save: <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(key, val, options)</span> </span>{
+            <div class="content"><div class='highlight'><pre>        save: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">key, val, options</span>) </span>{
             <span class="hljs-keyword">var</span> model = <span class="hljs-keyword">this</span>;
             <span class="hljs-keyword">var</span> attrs;</pre></div></div>
             
         </li>
         
         
-        <li id="section-11">
+        <li id="section-12">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-11">&#182;</a>
+                <a class="pilcrow" href="#section-12">&#182;</a>
               </div>
               <p>Handle both <code>&quot;key&quot;, value</code> and <code>{key: value}</code> -style arguments.</p>
 
@@ -254,11 +295,11 @@ only attributes that have been changed on the server</p>
         </li>
         
         
-        <li id="section-12">
+        <li id="section-13">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-12">&#182;</a>
+                <a class="pilcrow" href="#section-13">&#182;</a>
               </div>
               <p>If there are no unsaved changes, do not dispatch a request,
 but immediately call the <code>success</code> callback</p>
@@ -276,11 +317,11 @@ but immediately call the <code>success</code> callback</p>
         </li>
         
         
-        <li id="section-13">
+        <li id="section-14">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-13">&#182;</a>
+                <a class="pilcrow" href="#section-14">&#182;</a>
               </div>
               <p>This callback will be executed after the attributes from the response
 have been set to the model, before <code>sync</code> is triggered</p>
@@ -288,16 +329,16 @@ have been set to the model, before <code>sync</code> is triggered</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>            <span class="hljs-keyword">var</span> success = options.success;
-            options.success = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(model, resp, options)</span> </span>{</pre></div></div>
+            options.success = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">model, resp, options</span>) </span>{</pre></div></div>
             
         </li>
         
         
-        <li id="section-14">
+        <li id="section-15">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-14">&#182;</a>
+                <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
               <p>Reset synced attributes again, so that changes coming from the server are
 considered to be saved.</p>
@@ -314,11 +355,11 @@ considered to be saved.</p>
         </li>
         
         
-        <li id="section-15">
+        <li id="section-16">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-15">&#182;</a>
+                <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
               <p>In case of error set the synced attributes back to the values before the object
 was pro-actively reset when the save request was dispatched.</p>
@@ -326,16 +367,16 @@ was pro-actively reset when the save request was dispatched.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>            <span class="hljs-keyword">var</span> error = options.error;
-            options.error = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(model, resp, options)</span> </span>{</pre></div></div>
+            options.error = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">model, resp, options</span>) </span>{</pre></div></div>
             
         </li>
         
         
-        <li id="section-16">
+        <li id="section-17">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-16">&#182;</a>
+                <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
               <p>Only restore original value if no other concurrent save requests
 have reset the synced attributes in the meantime.</p>
@@ -355,11 +396,11 @@ have reset the synced attributes in the meantime.</p>
         </li>
         
         
-        <li id="section-17">
+        <li id="section-18">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-17">&#182;</a>
+                <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
               <p>Pro-actively reset _syncedAttributes so that concurrent saves will only go through
 if attributes have actually been changed</p>
@@ -375,33 +416,20 @@ if attributes have actually been changed</p>
         </li>
         
         
-        <li id="section-18">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
-              </div>
-              <p>Override #fetch to set the <code>partial</code> flag in the options</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>        fetch: <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(options)</span> </span>{
-            <span class="hljs-keyword">var</span> model = <span class="hljs-keyword">this</span>;
-
-            options || (options = {});</pre></div></div>
-            
-        </li>
-        
-        
         <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
-              <p>if(options.partial === void 0) options.partial = !options.reset;</p>
+              <p>Override #fetch to set the <code>partial</code> flag in the options</p>
 
             </div>
+            
+            <div class="content"><div class='highlight'><pre>        fetch: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">options</span>) </span>{
+            <span class="hljs-keyword">var</span> model = <span class="hljs-keyword">this</span>;
+
+            options || (options = {});</pre></div></div>
             
         </li>
         
@@ -412,13 +440,26 @@ if attributes have actually been changed</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
+              <p>if(options.partial === void 0) options.partial = !options.reset;</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-21">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>
               <p>This callback will be executed after the attributes from the response
 have been set to the model, before <code>sync</code> is triggered</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>            <span class="hljs-keyword">var</span> success = options.success;
-            options.success = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(resp)</span> </span>{
+            options.success = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">resp</span>) </span>{
 
                 model._resetSyncedAttributes();
 
@@ -434,11 +475,11 @@ have been set to the model, before <code>sync</code> is triggered</p>
         </li>
         
         
-        <li id="section-21">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-21">&#182;</a>
+                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
               <p>If a snapshot of the attributes hash is passed in option <code>partialBaseline</code>,
 this will return only those attributes from the parsed response, which have
@@ -446,7 +487,7 @@ changed in comparison to the snapshop baseline</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        parse: <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(resp, options)</span> </span>{
+            <div class="content"><div class='highlight'><pre>        parse: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">resp, options</span>) </span>{
             <span class="hljs-keyword">var</span> result = BackboneBase.Model.prototype.parse.apply(<span class="hljs-keyword">this</span>, <span class="hljs-built_in">arguments</span>);
 
             options || (options = {});
@@ -459,11 +500,11 @@ changed in comparison to the snapshop baseline</p>
         </li>
         
         
-        <li id="section-22">
+        <li id="section-23">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-22">&#182;</a>
+                <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
               <p>important: remove the partial baseline after the first parse,
 otherwise nested constructor calls, might use a wrong baseline in their
@@ -480,11 +521,11 @@ parse() invocations</p>
         </li>
         
         
-        <li id="section-23">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-23">&#182;</a>
+                <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
               <p>Override to add support for the <code>partial</code> option:
 When <code>partial</code> is set to true, the JSON will contain only the unsaved
@@ -492,7 +533,7 @@ attributes in addition to the ID attribute</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        toJSON: <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(options)</span> </span>{
+            <div class="content"><div class='highlight'><pre>        toJSON: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">options</span>) </span>{
             <span class="hljs-keyword">var</span> attributes, result, id;
 
             options || (options = {});
@@ -503,11 +544,11 @@ attributes in addition to the ID attribute</p>
         </li>
         
         
-        <li id="section-24">
+        <li id="section-25">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-24">&#182;</a>
+                <a class="pilcrow" href="#section-25">&#182;</a>
               </div>
               <p>Calculate the partial JSON representation
 and make sure the core attributes are included</p>
@@ -522,11 +563,11 @@ and make sure the core attributes are included</p>
         </li>
         
         
-        <li id="section-25">
+        <li id="section-26">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-25">&#182;</a>
+                <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
               <p>Addtionally ensure the id attribute is included</p>
 
@@ -538,11 +579,11 @@ and make sure the core attributes are included</p>
         </li>
         
         
-        <li id="section-26">
+        <li id="section-27">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-26">&#182;</a>
+                <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
               <p>Restore attributes</p>
 
@@ -558,11 +599,11 @@ and make sure the core attributes are included</p>
         </li>
         
         
-        <li id="section-27">
+        <li id="section-28">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-27">&#182;</a>
+                <a class="pilcrow" href="#section-28">&#182;</a>
               </div>
               <p>Override to add support for <code>protectUnsaved</code> option:
 When <code>protectUnsaved</code> is set to true all unsaved attribute will
@@ -570,18 +611,18 @@ be protected from being set.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        set: <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(key, val, options)</span> </span>{
+            <div class="content"><div class='highlight'><pre>        set: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">key, val, options</span>) </span>{
             <span class="hljs-keyword">var</span> attrs, unsavedKeys;
             <span class="hljs-keyword">if</span>(key === <span class="hljs-literal">null</span>) <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>;</pre></div></div>
             
         </li>
         
         
-        <li id="section-28">
+        <li id="section-29">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-28">&#182;</a>
+                <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
               <p>Handle both <code>&quot;key&quot;, value</code> and <code>{key: value}</code> -style arguments.</p>
 
@@ -607,18 +648,41 @@ be protected from being set.</p>
         </li>
         
         
-        <li id="section-29">
+        <li id="section-30">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-29">&#182;</a>
+                <a class="pilcrow" href="#section-30">&#182;</a>
               </div>
               <p>Internal method that is called directly after attributes have been set from a server response</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        _resetSyncedAttributes: <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> </span>{
+            <div class="content"><div class='highlight'><pre>        _resetSyncedAttributes: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">options</span>) </span>{
+            options = options || {};
             <span class="hljs-keyword">this</span>._syncedAttributes = _.clone(<span class="hljs-keyword">this</span>.attributes);
+
+            <span class="hljs-keyword">var</span> inlineJSON = _.uniq(_.compact(_.flatten(
+                _.union([options.inlineJSON], [_.result(<span class="hljs-keyword">this</span>, <span class="hljs-string">"inlineJSON"</span>)])
+            )));
+
+            <span class="hljs-keyword">if</span>(inlineJSON.length&gt;<span class="hljs-number">0</span>) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-31">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-31">&#182;</a>
+              </div>
+              <p>this will only contain attrs from the core attrs and inlined embeddings</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>                <span class="hljs-keyword">this</span>._syncedInlinedJSONRepresentation = <span class="hljs-keyword">this</span>.toJSON(options);
+            }
         }
 
 
