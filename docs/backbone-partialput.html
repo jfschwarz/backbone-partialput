@@ -444,6 +444,11 @@ if attributes have actually been changed</p>
 
             </div>
             
+            <div class="content"><div class='highlight'><pre>            options = _.extend({}, options, { resetSyncedAttributes: <span class="hljs-literal">true</span> });
+
+            <span class="hljs-keyword">return</span> BackboneBase.Model.prototype.fetch.call(<span class="hljs-keyword">this</span>, options);
+        },</pre></div></div>
+            
         </li>
         
         
@@ -452,34 +457,6 @@ if attributes have actually been changed</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-21">&#182;</a>
-              </div>
-              <p>This callback will be executed after the attributes from the response
-have been set to the model, before <code>sync</code> is triggered</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>            <span class="hljs-keyword">var</span> success = options.success;
-            options.success = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">resp</span>) </span>{
-
-                model._resetSyncedAttributes();
-
-                <span class="hljs-keyword">if</span>(success) {
-                    success(resp);
-                }
-
-            };
-
-            <span class="hljs-keyword">return</span> BackboneBase.Model.prototype.fetch.call(<span class="hljs-keyword">this</span>, options);
-        },</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-22">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
               <p>If a snapshot of the attributes hash is passed in option <code>partialBaseline</code>,
 this will return only those attributes from the parsed response, which have
@@ -500,11 +477,11 @@ changed in comparison to the snapshop baseline</p>
         </li>
         
         
-        <li id="section-23">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-23">&#182;</a>
+                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
               <p>important: remove the partial baseline after the first parse,
 otherwise nested constructor calls, might use a wrong baseline in their
@@ -521,11 +498,11 @@ parse() invocations</p>
         </li>
         
         
-        <li id="section-24">
+        <li id="section-23">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-24">&#182;</a>
+                <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
               <p>Override to add support for the <code>partial</code> option:
 When <code>partial</code> is set to true, the JSON will contain only the unsaved
@@ -544,11 +521,11 @@ attributes in addition to the ID attribute</p>
         </li>
         
         
-        <li id="section-25">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-25">&#182;</a>
+                <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
               <p>Calculate the partial JSON representation
 and make sure the core attributes are included</p>
@@ -563,11 +540,11 @@ and make sure the core attributes are included</p>
         </li>
         
         
-        <li id="section-26">
+        <li id="section-25">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-26">&#182;</a>
+                <a class="pilcrow" href="#section-25">&#182;</a>
               </div>
               <p>Addtionally ensure the id attribute is included</p>
 
@@ -579,11 +556,11 @@ and make sure the core attributes are included</p>
         </li>
         
         
-        <li id="section-27">
+        <li id="section-26">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-27">&#182;</a>
+                <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
               <p>Restore attributes</p>
 
@@ -599,11 +576,11 @@ and make sure the core attributes are included</p>
         </li>
         
         
-        <li id="section-28">
+        <li id="section-27">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-28">&#182;</a>
+                <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
               <p>Override to add support for <code>protectUnsaved</code> option:
 When <code>protectUnsaved</code> is set to true all unsaved attribute will
@@ -618,11 +595,11 @@ be protected from being set.</p>
         </li>
         
         
-        <li id="section-29">
+        <li id="section-28">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-29">&#182;</a>
+                <a class="pilcrow" href="#section-28">&#182;</a>
               </div>
               <p>Handle both <code>&quot;key&quot;, value</code> and <code>{key: value}</code> -style arguments.</p>
 
@@ -642,17 +619,22 @@ be protected from being set.</p>
                 attrs = _.omit(attrs, unsavedKeys);
             }
 
-            <span class="hljs-keyword">return</span> BackboneBase.Model.prototype.set.apply(<span class="hljs-keyword">this</span>, [attrs, options]);
+            <span class="hljs-keyword">var</span> result = BackboneBase.Model.prototype.set.apply(<span class="hljs-keyword">this</span>, [attrs, options]);
+            <span class="hljs-keyword">if</span>(options.resetSyncedAttributes) {
+                <span class="hljs-keyword">this</span>._resetSyncedAttributes();
+            }
+
+            <span class="hljs-keyword">return</span> result;
         },</pre></div></div>
             
         </li>
         
         
-        <li id="section-30">
+        <li id="section-29">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-30">&#182;</a>
+                <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
               <p>Internal method that is called directly after attributes have been set from a server response</p>
 
@@ -671,11 +653,11 @@ be protected from being set.</p>
         </li>
         
         
-        <li id="section-31">
+        <li id="section-30">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-31">&#182;</a>
+                <a class="pilcrow" href="#section-30">&#182;</a>
               </div>
               <p>this will only contain attrs from the core attrs and inlined embeddings</p>
 
