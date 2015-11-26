@@ -178,19 +178,7 @@
 
             options || (options = {});
             //if(options.partial === void 0) options.partial = !options.reset;
-
-            // This callback will be executed after the attributes from the response
-            // have been set to the model, before `sync` is triggered
-            var success = options.success;
-            options.success = function(resp) {
-
-                model._resetSyncedAttributes();
-
-                if(success) {
-                    success(resp);
-                }
-
-            };
+            options = _.extend({}, options, { resetSyncedAttributes: true });
 
             return BackboneBase.Model.prototype.fetch.call(this, options);
         },
@@ -268,7 +256,12 @@
                 attrs = _.omit(attrs, unsavedKeys);
             }
 
-            return BackboneBase.Model.prototype.set.apply(this, [attrs, options]);
+            var result = BackboneBase.Model.prototype.set.apply(this, [attrs, options]);
+            if(options.resetSyncedAttributes) {
+                this._resetSyncedAttributes();
+            }
+
+            return result;
         },
 
         // Internal method that is called directly after attributes have been set from a server response

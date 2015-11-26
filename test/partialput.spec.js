@@ -14,7 +14,7 @@ define(function(require) {
 
         embeddings: {
             e: Backbone.Model,
-            c: Backbone.Collection
+            c: Backbone.Collection.extend({ model: Backbone.Model })
         },
 
         references: {
@@ -22,6 +22,8 @@ define(function(require) {
         },
 
         inlineJSON: [ "e", "c" ],
+
+        autoFetchRelated: false,
 
         url: function () { return "a/" + this.id }
 
@@ -187,6 +189,32 @@ define(function(require) {
 
                 b.set("c", null);
                 expect(b.hasUnsavedChanges()).to.be.true;
+            });
+
+            it('should return false for embedded objects which have been set through inlined data in the fetch response from its parent', function () {
+                var b = new B({
+                    id: "b1"
+                });
+                b.fetch();
+                server.requests[0].respond(200, 
+                    { "Content-Type": "application/json" }, 
+                    JSON.stringify({ id: "b1", e: { name: "emb1" } })
+                );
+
+                expect(b.get("e").hasUnsavedChanges()).to.be.false;
+            });
+
+            it('should return false for embedded objects which have been set through inlined collection data in the fetch response from its parent', function () {
+                var b = new B({
+                    id: "b2"
+                });
+                b.fetch();
+                server.requests[0].respond(200, 
+                    { "Content-Type": "application/json" }, 
+                    JSON.stringify({ id: "b1", c: [ { id: "c1", title: "item1" } ] })
+                );
+
+                expect(b.get("c").models[0].hasUnsavedChanges()).to.be.false;
             });
 
 
