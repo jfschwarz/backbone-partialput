@@ -74,12 +74,13 @@
 
             var json = this.toJSON(options);
             var result = {};
+            var that = this
             _.each(inlineJSON, function(key) {
                 var firstKey = key.split(".")[0];
-                if(!_.isEqual(json[firstKey], this._syncedInlinedJSONRepresentation[firstKey])) {
+                if(!_.isEqual(json[firstKey], that._syncedInlinedJSONRepresentation[firstKey])) {
                     result[key] = json[firstKey];
                 }
-            }, this);
+            });
             return result;
         },
 
@@ -97,13 +98,14 @@
                 silent: true
             });
 
+            var that = this;
             _.each(this.attributes, function(value, key) {
-                if(this._syncedAttributes[key]) {
+                if(that._syncedAttributes[key]) {
                     return;
                 }
 
-                this.unset(key, { silent: true });
-            }, this);
+                that.unset(key, { silent: true });
+            });
 
             this.trigger('change');
         },
